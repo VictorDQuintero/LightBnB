@@ -27,13 +27,13 @@ const getUserWithEmail = function (email) {
       `SELECT * FROM users
        WHERE email = $1`, [email])
     .then((result) => {
-      console.log(result.rows[0]);
+      
       resolvedUser = result.rows[0];
       return resolvedUser;
     })
     .catch((err) => {
-      console.log(err.message);
       return Promise.reject(err);
+      
     });  
 };
 
@@ -49,13 +49,13 @@ const getUserWithId = function (id) {
       `SELECT * FROM users
        WHERE id = $1`, [id])
     .then((result) => {
-      console.log(result.rows[0]);
+      
       resolvedUser = result.rows[0];
       return resolvedUser;
     })
     .catch((err) => {
-      console.log(err.message);
       return Promise.reject(err);
+      
     });  
   
 };
@@ -65,29 +65,21 @@ const getUserWithId = function (id) {
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-/* 
-addUser
-Accepts a user object that will have a name, email, and password property
-This function should insert the new user into the database.
-It will return a promise that resolves with the new user object. This object should contain the user's id after it's been added to the database.
-Add RETURNING *; to the end of an INSERT query to return the objects that were inserted. This is handy when you need the auto generated id of an object you've just added to the database.
- */
+
 const addUser = function (user) {
    
-  // return Promise.resolve(user);
   return pool
     .query(
       `INSERT INTO users (name, email, password)
       VALUES ($1, $2, $3) 
       RETURNING *`, [user.name, user.email, user.password])
     .then((result) => {
-      console.log(result.rows[0]);
+      
       return result.rows[0];
     })
     .catch((err) => {
-      console.log(err.message);
-      return Promise.reject(err)
-      
+      return Promise.reject(err);
+                
     });  
 };
 
@@ -99,7 +91,17 @@ const addUser = function (user) {
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  return pool
+    .query(
+      `SELECT * FROM properties LIMIT $1`, [limit])
+    .then((result) => {
+      
+      return Promise.resolve(result.rows);
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+      
+    });
 };
 
 /// Properties
@@ -110,21 +112,24 @@ const getAllReservations = function (guest_id, limit = 10) {
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-const getAllProperties = function (options, limit = 10) {
-  // const limitedProperties = {};
-  // for (let i = 1; i <= limit; i++) {
-  //   limitedProperties[i] = properties[i];
-  // }
-  // return Promise.resolve(limitedProperties);  
+const getAllProperties = function (guest_id, limit = 10) {
+  
  return pool
     .query(
-      `SELECT * FROM properties LIMIT $1`, [limit])
+      `SELECT reservations.id, properties.title, reservations.start_date, properties.cost_per_night, AVG(property_reviews.rating) AS average_rating
+FROM properties, property_reviews
+JOIN reservations ON property_reviews.property_id = properties.id
+WHERE user_id = $1
+
+ORDER BY start_date 
+LIMIT $2;`, [limit, guest_id])
     .then((result) => {
-      console.log(result.rows);
-      return Promise.resolve(result.rows);
+      
+      return result.rows;
     })
     .catch((err) => {
-      console.log(err.message);
+      return Promise.reject(err);
+      
     });
 };
 
