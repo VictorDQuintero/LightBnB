@@ -19,21 +19,8 @@ const pool = new Pool({
  * @return {Promise<{}>} A promise to the user.
  */
 
-/* 
- * getUserWithEmail
- * Accepts an email address and will return a promise.
- * The promise should resolve with a user object with the given email address,  or null if that user does not exist.
- * 
-*/
 const getUserWithEmail = function (email) {
   
-  /*
-    for (const userId in users) {
-    const user = users[userId];
-    if (user && user.email.toLowerCase() === email.toLowerCase()) {
-      resolvedUser = user;
-    }
-  } */
   let resolvedUser = null;
     return pool
     .query(
@@ -42,11 +29,11 @@ const getUserWithEmail = function (email) {
     .then((result) => {
       console.log(result.rows[0]);
       resolvedUser = result.rows[0];
-      return Promise.resolve(resolvedUser);
+      return resolvedUser;
     })
     .catch((err) => {
       console.log(err.message);
-      return Promise.resolve(resolvedUser);
+      return Promise.reject(err);
     });  
 };
 
@@ -64,11 +51,11 @@ const getUserWithId = function (id) {
     .then((result) => {
       console.log(result.rows[0]);
       resolvedUser = result.rows[0];
-      return Promise.resolve(users[id])
+      return resolvedUser;
     })
     .catch((err) => {
       console.log(err.message);
-      return Promise.resolve(users[id]);
+      return Promise.reject(err);
     });  
   
 };
@@ -94,11 +81,12 @@ const addUser = function (user) {
       VALUES ($1, $2, $3) 
       RETURNING *`, [user.name, user.email, user.password])
     .then((result) => {
-      console.log(result.rows);
-      return Promise.resolve(result.rows);
+      console.log(result.rows[0]);
+      return result.rows[0];
     })
     .catch((err) => {
       console.log(err.message);
+      return Promise.reject(err)
       
     });  
 };
