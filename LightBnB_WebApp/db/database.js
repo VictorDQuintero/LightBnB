@@ -120,36 +120,35 @@ const getAllProperties = function (options, limit = 10) {
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
   LEFT JOIN property_reviews ON properties.id = property_id
+  WHERE 1=1
   `;
 
   if (options.city) {
     queryParams.push(`%${options.city}%`);
-    queryString += `WHERE city LIKE $${queryParams.length} `;
+    queryString += `AND city LIKE $${queryParams.length} `;
   }
 
-  if (!options.city && options.owner_id) {
-    queryParams.push(`${owner_id}`);
-    queryString += `WHERE owner_id = $${queryParams.length} `;
-  } else if (options.owner_id) {
-    queryParams.push(`${owner_id}`);
+  if (options.owner_id) {
+    queryParams.push(`${options.owner_id}`);
     queryString += `AND owner_id = $${queryParams.length} `;
   }
 
   if (options.minimum_price_per_night && options.maximum_price_per_night) {
-    queryParams.push(`${minimum_price_per_night}`);
-    queryString += `WHERE price_per_night >= $${queryParams.length} `;
-    queryParams.push(`${maximum_price_per_night}`);
-    queryString += `AND price_per_night >= $${queryParams.length} `;
+    queryParams.push(`${options.minimum_price_per_night}`);
+    queryString += `AND cost_per_night >= $${queryParams.length} `;
+    queryParams.push(`${options.maximum_price_per_night}`);
+    queryString += `AND cost_per_night <= $${queryParams.length} `;
   }
 
+  queryString += `GROUP BY properties.id`;
+
   if (options.minimum_rating) {
-    queryParams.push(`${minimum_rating}`)
-    queryString += `HAVING average_rating = $${queryParams.length} `;
+    queryParams.push(`${options.minimum_rating}`)
+    queryString += `HAVING average_rating >= $${queryParams.length} `;
   }
 
   queryParams.push(limit);
   queryString += `
-  GROUP BY properties.id
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};  
   `;
@@ -157,10 +156,10 @@ const getAllProperties = function (options, limit = 10) {
   console.log(queryString, queryParams)
 
   return pool.query(queryString, queryParams).then((result) => {
-   result.rows;
+   return result.rows;
  })
  .catch((err) => {
-   return Promise.resolve(err);
+   return Promise.reject(err);
  });
   
 };
