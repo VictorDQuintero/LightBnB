@@ -119,7 +119,7 @@ const getAllProperties = function (options, limit = 10) {
   let queryString =`
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
-  LEFT JOIN property_reviews ON properties.id = property_id
+  JOIN property_reviews ON properties.id = property_id
   WHERE 1=1
   `;
 
@@ -133,10 +133,14 @@ const getAllProperties = function (options, limit = 10) {
     queryString += `AND owner_id = $${queryParams.length}\n`;
   }
 
-  if (options.minimum_price_per_night && options.maximum_price_per_night) {
+  if (options.minimum_price_per_night) {
     queryParams.push(options.minimum_price_per_night * 100);
+    queryString += `AND (cost_per_night >= $${queryParams.length}\n`;
+  }
+
+  if (options.maximum_price_per_night) {
     queryParams.push(options.maximum_price_per_night * 100);
-    queryString += `AND (cost_per_night >= $${queryParams.length - 1} AND cost_per_night <= $${queryParams.length})\n`;
+    queryString += `AND cost_per_night <= $${queryParams.length})\n`
   }
 
   queryString += `GROUP BY properties.id\n`;
@@ -152,7 +156,7 @@ const getAllProperties = function (options, limit = 10) {
   LIMIT $${queryParams.length};  
   `;
 
-  console.log(queryString, queryParams)
+  // console.log(queryString, queryParams)
 
   return pool.query(queryString, queryParams).then((result) => {
    return result.rows;
