@@ -68,7 +68,6 @@ const addUser = function (user) {
       VALUES ($1, $2, $3) 
       RETURNING *`, [user.name, user.email, user.password])
     .then((result) => {
-      console.log(result.rows[0])
       return result.rows[0];
     })
     .catch((err) => {
@@ -96,8 +95,7 @@ AND reservations.end_date < now()::date
 GROUP BY properties.id, reservations.id
 ORDER BY reservations.start_date
 LIMIT $2;`, [guest_id, limit])
-    .then((result) => {
-      
+    .then((result) => {      
       return result.rows;
     })
     .catch((err) => {
@@ -156,10 +154,8 @@ const getAllProperties = function (options, limit = 10) {
   LIMIT $${queryParams.length};  
   `;
 
-  // console.log(queryString, queryParams)
-
   return pool.query(queryString, queryParams).then((result) => {
-   return result.rows;
+  return result.rows;
  })
  .catch((err) => {
    return Promise.reject(err);
@@ -173,46 +169,7 @@ const getAllProperties = function (options, limit = 10) {
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function (property) {
- /* // Property
-{
-  owner_id: int,
-  title: string,
-  description: string,
-  thumbnail_photo_url: string,
-  cover_photo_url: string,
-  cost_per_night: string,
-  street: string,
-  city: string,
-  province: string,
-  post_code: string,
-  country: string,
-  parking_spaces: int,
-  number_of_bathrooms: int,
-  number_of_bedrooms: int
-} */
-
-  /* CREATE TABLE properties (
-  id SERIAL PRIMARY KEY NOT NULL,
-  owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  thumbnail_photo_url VARCHAR(255) NOT NULL,
-  cover_photo_url VARCHAR(255) NOT NULL,
-  cost_per_night INTEGER  NOT NULL DEFAULT 0,
-  parking_spaces INTEGER  NOT NULL DEFAULT 0,
-  number_of_bathrooms INTEGER  NOT NULL DEFAULT 0,
-  number_of_bedrooms INTEGER  NOT NULL DEFAULT 0,
-
-  country VARCHAR(255) NOT NULL,
-  street VARCHAR(255) NOT NULL,
-  city VARCHAR(255) NOT NULL,
-  province VARCHAR(255) NOT NULL,
-  post_code VARCHAR(255) NOT NULL,
-
-  active BOOLEAN NOT NULL DEFAULT TRUE
-); */
-
+ 
   return pool
   .query(
     `INSERT INTO properties (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, parking_spaces, number_of_bathrooms, number_of_bedrooms, street, city, province, post_code, country)
@@ -221,7 +178,6 @@ const addProperty = function (property) {
     `, [property.owner_id, property.title, property.description, property.thumbnail_photo_url, property.cover_photo_url, property.cost_per_night, property.parking_spaces, property.number_of_bathrooms, property.number_of_bedrooms, property.street, property.city, property.province, property.post_code, property.country]
   )
   .then((result) => {
-    console.log(result.rows[0]);
     return result.rows[0];
   })
   .catch((err) => {
